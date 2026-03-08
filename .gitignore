@@ -1,0 +1,15 @@
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE Files
+.vscode/
+.idea/
+
+copilot-instructions.md

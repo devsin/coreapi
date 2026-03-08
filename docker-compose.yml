@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: core
+      POSTGRES_PASSWORD: core
+      POSTGRES_DB: core
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  core:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      PORT: ${PORT:-8080}
+      ENV: ${ENV:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://core:core@postgres:5432/core?sslmode=disable}
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-supersecretkey}
+      CORS_ALLOWED_ORIGINS: ""
+    ports:
+      - "8080:8080"
+
+  core-web:
+    build:
+      context: ../core-web
+      args:
+        PUBLIC_SUPABASE_URL: ${PUBLIC_SUPABASE_URL:-}
+        PUBLIC_SUPABASE_ANON_KEY: ${PUBLIC_SUPABASE_ANON_KEY:-}
+        PUBLIC_API_URL: ${PUBLIC_API_URL:-http://core:8080}
+    restart: unless-stopped
+    depends_on:
+      - core
+    environment:
+      PORT: ${WEB_PORT:-3000}
+      ORIGIN: ${ORIGIN:-http://localhost:3000}
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
